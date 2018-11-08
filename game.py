@@ -43,10 +43,38 @@ class Player():
 		self.speed = 8
 		self.jump_speed = 8
 		self.mass = 2
-		
+		self.states = {
+			"run": False,
+			"jump": False,
+			"stop": False,
+			"shoot": False
+		}
+
+	def set_states( self, states ):
+		self.states = states
+
+	def get_states( self ):
+		return self.states	
+
 class Movement():
 	def __init__( self ):
 		self.jumping = False
+
+	def check_keys( self, key ):
+		states = player.get_states()	
+		if key[pygame.K_w]:
+			states["jump"] = True
+			states["stop"] = False
+			if key[pygame.K_d] or key[pygame.K_a]:
+				states["run"] = True
+		elif key[pygame.K_d] or key[pygame.K_a] and not key[pygame.K_w]:
+			states["run"] = True
+			states["stop"] = False
+			states["jump"] = False
+		else:
+			states["stop"] = True
+			states["run"] = False
+		print( states )
 
 	def move_left( self ):
 		player.x += player.speed
@@ -71,6 +99,9 @@ class Movement():
 			sprites.draw( screen, list_sprites[self.index], player.x, player.y, orientation )	
 			sprites.set_index( self.index + 1 )
 		sprites.set_orientation( orientation )
+
+	def shoot( self, key_state ):
+		pass
 
 	def jump( self ):	
 		self.jumping = True
@@ -111,13 +142,28 @@ while True:
 	if key[pygame.K_d]:
 		movement.run( "r" )
 		movement.move_left()
+		if key[pygame.K_w]:
+			movement.jump()
+
 	elif key[pygame.K_a]:
 		movement.run( "l" )
 		movement.move_right()
+		if key[pygame.K_w]:
+			movement.jump()
+
 	elif key[pygame.K_w]:
 		movement.jump()
+		if key[pygame.K_d]:
+			movement.run( "r" )
+			movement.move_left()
+
+	elif key[pygame.K_SPACE]:
+		movement.shoot( key )
+
 	else:
 		movement.stop()
 	
+	movement.check_keys( key )
+
 	movement.update()	
 	pygame.display.flip()
